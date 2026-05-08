@@ -92,10 +92,11 @@ function nowText() {
   }).format(new Date());
 }
 
-function googleNewsRssUrl(query) {
-  return `https://news.google.com/rss/search?q=${encodeURIComponent(
-    query
-  )}&hl=id&gl=ID&ceid=ID:id`;
+function newsSources() {
+  return [
+    "https://www.cnbcindonesia.com/market/rss",
+    "https://www.cnbcindonesia.com/investment/rss"
+  ];
 }
 
 async function sendTelegram(text) {
@@ -170,27 +171,44 @@ function analyzeSentiment(title = "") {
 async function checkNews() {
   console.log(`[${nowText()}] Cek berita baru...`);
 
-  for (const keyword of KEYWORDS) {
+  const filters = [
+    "BBCA",
+    "BBRI",
+    "IHSG",
+    "Bitcoin",
+    "BTC",
+    "USD",
+    "Rupiah",
+    "BCA",
+    "BRI",
+    "asing"
+  ];
+
+  for (const source of newsSources()) {
     try {
-      const feed = await parser.parseURL(googleNewsRssUrl(keyword));
+      const feed = await parser.parseURL(source);
       const items = feed.items || [];
 
-console.log(`Keyword ${keyword} -> ${items.length} berita`);
-      
-      for (const item of items.slice(0, 3)) {
+      console.log(`Source ${source} -> ${items.length} berita`);
+
+      for (const item of items.slice(0, 10)) {
         const link = item.link;
         const title = cleanTitle(item.title);
 
         if (!link || !title) continue;
         if (sentLinks.has(link)) continue;
 
+        const match = filters.some((word) =>
+          title.toLowerCase().includes(word.toLowerCase())
+        );
+
+        if (!match) continue;
+
         sentLinks.add(link);
 
-const sentiment = analyzeSentiment(title);
+        const sentiment = analyzeSentiment(title);
 
-const message = `📰 BERITA MARKET BARU
-
-Topik: ${keyword}
+        const message = `📰 BERITA MARKET BARU
 
 ${title}
 
@@ -202,12 +220,13 @@ ${link}
 ⏰ ${nowText()}`;
 
         await sendTelegram(message);
+
         console.log(`Terkirim: ${title}`);
 
         await new Promise((r) => setTimeout(r, 5000));
       }
     } catch (err) {
-      console.log(`Gagal ambil berita ${keyword}: ${err.message}`);
+      console.log(`Gagal ambil RSS ${source}: ${err.message}`);
     }
   }
 }
