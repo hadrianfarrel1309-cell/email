@@ -13,6 +13,8 @@ const NEWS_POLL_MINUTES = Number(process.env.NEWS_POLL_MINUTES || 10);
 const TIMEZONE = process.env.TIMEZONE || "Asia/Jakarta";
 
 const sentLinks = new Set();
+const lastPrices = {};
+const lastPanicAlerts = {};
 
 const KEYWORDS = [
   "BBCA",
@@ -209,6 +211,51 @@ ${link}
   }
 }
 
+async function checkPanicSell() {
+  const assets = [
+    { name: "BBCA", symbol: "BBCA.JK", limit: -2, unit: "IDR" },
+    { name: "BBRI", symbol: "BBRI.JK", limit: -2, unit: "IDR" },
+    { name: "IHSG", symbol: "^JKSE", limit: -1.5, unit: "" },
+    { name: "Bitcoin", symbol: "BTC-USD", limit: -3, unit: "USD" }
+  ];
+
+  for (const asset of assets) {
+    const current = await getPrice(asset.symbol);
+    const currentNum = Number(String(current).replace(/[^\d.-]/g, ""));
+
+    if (!currentNum || Number.isNaN(currentNum)) continue;
+
+    const previous = lastPrices[asset.symbol];
+    lastPrices[asset.symbol] = currentNum;
+
+    if (!previous) continue;
+
+    const changePct = ((currentNum - previous) / previous) * 100;
+
+    if (changePct <= asset.limit) {
+      const lastAlert = lastPanicAlerts[asset.symbol] || 0;
+      const now = Date.now();
+
+      if (now - lastAlert < 30 * 60 * 1000) continue;
+
+      lastPanicAlerts[asset.symbol] = now;
+
+      await sendTelegram(`🔴 PANIC SELL ALERT
+
+${asset.name} turun ${changePct.toFixed(2)}%
+
+Harga sebelumnya: ${formatNumber(previous)} ${asset.unit}
+Harga sekarang: ${formatNumber(currentNum)} ${asset.unit}
+
+Status:
+Waspada tekanan jual besar.
+Jangan FOMO sell, cek support dan volume dulu.
+
+⏰ ${nowText()}`);
+    }
+  }
+}
+
 async function sendStartupMessage() {
   const bbca = await getPrice("BBCA.JK");
   const bbri = await getPrice("BBRI.JK");
@@ -257,7 +304,10 @@ app.listen(PORT, async () => {
     console.log(`Gagal kirim startup message: ${err.message}`);
   }
 
-  await checkNews();
+await checkNews();
 
-  setInterval(checkNews, NEWS_POLL_MINUTES * 60 * 1000);
+setInterval(checkNews, NEWS_POLL_MINUTES * 60 * 1000);
+
+await checkPanicSell();
+setInterval(checkPanicSell, 5 * 60 * 1000);
 });
