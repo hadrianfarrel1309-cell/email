@@ -15,6 +15,7 @@ const TIMEZONE = process.env.TIMEZONE || "Asia/Jakarta";
 const sentLinks = new Set();
 const lastPrices = {};
 const lastPanicAlerts = {};
+const lastBreakoutAlerts = {};
 
 const KEYWORDS = [
   "BBCA",
@@ -256,6 +257,51 @@ Jangan FOMO sell, cek support dan volume dulu.
   }
 }
 
+async function checkBreakout() {
+  const assets = [
+    { name: "BBCA", symbol: "BBCA.JK", limit: 2, unit: "IDR" },
+    { name: "BBRI", symbol: "BBRI.JK", limit: 2, unit: "IDR" },
+    { name: "IHSG", symbol: "^JKSE", limit: 1.2, unit: "" },
+    { name: "Bitcoin", symbol: "BTC-USD", limit: 3, unit: "USD" }
+  ];
+
+  for (const asset of assets) {
+    const current = await getPrice(asset.symbol);
+    const currentNum = Number(String(current).replace(/[^\d.-]/g, ""));
+
+    if (!currentNum || Number.isNaN(currentNum)) continue;
+
+    const previous = lastPrices[`breakout_${asset.symbol}`];
+    lastPrices[`breakout_${asset.symbol}`] = currentNum;
+
+    if (!previous) continue;
+
+    const changePct = ((currentNum - previous) / previous) * 100;
+
+    if (changePct >= asset.limit) {
+      const lastAlert = lastBreakoutAlerts[asset.symbol] || 0;
+      const now = Date.now();
+
+      if (now - lastAlert < 30 * 60 * 1000) continue;
+
+      lastBreakoutAlerts[asset.symbol] = now;
+
+      await sendTelegram(`🟢 BREAKOUT ALERT
+
+${asset.name} naik ${changePct.toFixed(2)}%
+
+Harga sebelumnya: ${formatNumber(previous)} ${asset.unit}
+Harga sekarang: ${formatNumber(currentNum)} ${asset.unit}
+
+Status:
+Ada dorongan beli kuat.
+Pantau volume dan jangan FOMO entry terlalu atas.
+
+⏰ ${nowText()}`);
+    }
+  }
+}
+
 async function sendStartupMessage() {
   const bbca = await getPrice("BBCA.JK");
   const bbri = await getPrice("BBRI.JK");
@@ -310,4 +356,6 @@ setInterval(checkNews, NEWS_POLL_MINUTES * 60 * 1000);
 
 await checkPanicSell();
 setInterval(checkPanicSell, 5 * 60 * 1000);
+await checkBreakout();
+setInterval(checkBreakout, 5 * 60 * 1000); 
 });
