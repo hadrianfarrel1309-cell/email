@@ -204,7 +204,7 @@ ${link}
         await sendTelegram(message);
         console.log(`Terkirim: ${title}`);
 
-        await new Promise((r) => setTimeout(r, 1500));
+        await new Promise((r) => setTimeout(r, 5000));
       }
     } catch (err) {
       console.log(`Gagal ambil berita ${keyword}: ${err.message}`);
