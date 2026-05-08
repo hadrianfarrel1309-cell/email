@@ -27,45 +27,43 @@ const KEYWORDS = [
 
 async function getPrice(symbol) {
   try {
-    const map = {
-      "BBCA.JK": "BBCA",
-      "BBRI.JK": "BBRI",
-      "^JKSE": "IHSG",
-      "BTC-USD": "BTC",
-      "IDR=X": "USDIDR"
-    };
+    if (symbol === "BTC-USD") {
+      const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd");
+      const data = await res.json();
+      return data?.bitcoin?.usd || "N/A";
+    }
 
-    const key = map[symbol];
+    if (symbol === "IDR=X") {
+      const res = await fetch("https://open.er-api.com/v6/latest/USD");
+      const data = await res.json();
+      return data?.rates?.IDR || "N/A";
+    }
 
-    const urls = {
-      BBCA: "https://api.goapi.io/stock/idx/BBCA",
-      BBRI: "https://api.goapi.io/stock/idx/BBRI",
-      IHSG: "https://api.goapi.io/stock/idx-composite",
-      BTC: "https://api.coincap.io/v2/assets/bitcoin",
-      USDIDR: "https://open.er-api.com/v6/latest/USD"
-    };
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1m`;
 
-    const res = await fetch(urls[key]);
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0"
+      }
+    });
+
     const data = await res.json();
+    const result = data?.chart?.result?.[0];
 
-    if (key === "BTC") {
-      return Number(data?.data?.priceUsd).toFixed(0);
-    }
+    const metaPrice =
+      result?.meta?.regularMarketPrice ||
+      result?.meta?.previousClose;
 
-    if (key === "USDIDR") {
-      return Number(data?.rates?.IDR).toFixed(0);
-    }
+    const closes = result?.indicators?.quote?.[0]?.close || [];
+    const lastClose = closes.filter((x) => typeof x === "number").pop();
 
-    if (key === "IHSG") {
-      return data?.data?.value || "N/A";
-    }
-
-    return data?.data?.close || "N/A";
+    return metaPrice || lastClose || "N/A";
   } catch (err) {
     console.log(`Gagal ambil harga ${symbol}: ${err.message}`);
     return "N/A";
   }
 }
+
 
 function formatNumber(num) {
   if (typeof num !== "number") return num;
