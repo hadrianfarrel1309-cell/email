@@ -28,10 +28,12 @@ const KEYWORDS = [
 async function getPrice(symbol) {
   try {
 if (symbol === "BTC-USD") {
-  const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
+  const res = await fetch("https://api.coinbase.com/v2/prices/BTC-USD/spot");
   const data = await res.json();
 
-  return Number(data?.price).toFixed(0) || "N/A";
+  return data?.data?.amount
+    ? Number(data.data.amount).toFixed(0)
+    : "N/A";
 }
 
     if (symbol === "IDR=X") {
