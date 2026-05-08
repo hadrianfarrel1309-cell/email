@@ -26,20 +26,42 @@ const KEYWORDS = [
 ];
 
 async function getPrice(symbol) {
+async function getPrice(symbol) {
   try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1m`;
+    const map = {
+      "BBCA.JK": "BBCA",
+      "BBRI.JK": "BBRI",
+      "^JKSE": "IHSG",
+      "BTC-USD": "BTC",
+      "IDR=X": "USDIDR"
+    };
 
-    const res = await fetch(url);
+    const key = map[symbol];
+
+    const urls = {
+      BBCA: "https://api.goapi.io/stock/idx/BBCA",
+      BBRI: "https://api.goapi.io/stock/idx/BBRI",
+      IHSG: "https://api.goapi.io/stock/idx-composite",
+      BTC: "https://api.coincap.io/v2/assets/bitcoin",
+      USDIDR: "https://open.er-api.com/v6/latest/USD"
+    };
+
+    const res = await fetch(urls[key]);
     const data = await res.json();
 
-    const result = data?.chart?.result?.[0];
-    const meta = result?.meta;
-
-    if (!meta?.regularMarketPrice) {
-      return "N/A";
+    if (key === "BTC") {
+      return Number(data?.data?.priceUsd).toFixed(0);
     }
 
-    return meta.regularMarketPrice;
+    if (key === "USDIDR") {
+      return Number(data?.rates?.IDR).toFixed(0);
+    }
+
+    if (key === "IHSG") {
+      return data?.data?.value || "N/A";
+    }
+
+    return data?.data?.close || "N/A";
   } catch (err) {
     console.log(`Gagal ambil harga ${symbol}: ${err.message}`);
     return "N/A";
