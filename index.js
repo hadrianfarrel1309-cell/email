@@ -1,1 +1,0 @@
-console.log("Market Bot V8 running...");
