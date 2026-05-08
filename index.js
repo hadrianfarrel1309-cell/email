@@ -323,6 +323,52 @@ Cek berita tiap ${NEWS_POLL_MINUTES} menit.
 ⏰ ${nowText()}`);
 }
 
+async function sendMorningBriefing() {
+  const bbca = await getPrice("BBCA.JK");
+  const bbri = await getPrice("BBRI.JK");
+  const ihsg = await getPrice("^JKSE");
+  const btc = await getPrice("BTC-USD");
+  const usdidr = await getPrice("IDR=X");
+
+  await sendTelegram(`📊 MORNING BRIEFING
+
+IHSG: ${formatNumber(ihsg)}
+BBCA: ${formatNumber(bbca)} IDR
+BBRI: ${formatNumber(bbri)} IDR
+Bitcoin: $${formatNumber(btc)}
+USD/IDR: ${formatNumber(usdidr)} IDR
+
+Sentimen market:
+🟢 Pantau saham perbankan
+🟡 Pantau foreign flow
+🔴 Waspada volatilitas crypto
+
+⏰ ${nowText()}`);
+}
+
+async function sendClosingRecap() {
+  const bbca = await getPrice("BBCA.JK");
+  const bbri = await getPrice("BBRI.JK");
+  const ihsg = await getPrice("^JKSE");
+  const btc = await getPrice("BTC-USD");
+  const usdidr = await getPrice("IDR=X");
+
+  await sendTelegram(`📉 MARKET CLOSE
+
+IHSG: ${formatNumber(ihsg)}
+BBCA: ${formatNumber(bbca)} IDR
+BBRI: ${formatNumber(bbri)} IDR
+Bitcoin: $${formatNumber(btc)}
+USD/IDR: ${formatNumber(usdidr)} IDR
+
+Summary:
+🟢 Pantau saham big bank
+🟡 IHSG masih bergerak dinamis
+🔴 Crypto masih volatile
+
+⏰ ${nowText()}`);
+}
+
 app.get("/", (req, res) => {
   res.send("Market Telegram Bot V8 aktif");
 });
@@ -358,4 +404,26 @@ await checkPanicSell();
 setInterval(checkPanicSell, 5 * 60 * 1000);
 await checkBreakout();
 setInterval(checkBreakout, 5 * 60 * 1000); 
+// Cek tiap 1 menit untuk briefing
+setInterval(async () => {
+  const now = new Date();
+
+  const jakarta = new Intl.DateTimeFormat("en-GB", {
+    timeZone: TIMEZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(now);
+
+  // Morning briefing 08:30
+  if (jakarta === "08:30") {
+    await sendMorningBriefing();
+  }
+
+  // Closing recap 16:15
+  if (jakarta === "16:15") {
+    await sendClosingRecap();
+  }
+}, 60 * 1000);
+  
 });
