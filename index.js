@@ -22,7 +22,14 @@ const KEYWORDS = [
   "USD IDR",
   "saham Indonesia",
   "bank BCA",
-  "bank BRI"
+  "bank BRI",
+  "asing beli BBCA",
+  "asing jual BBCA",
+  "asing beli BBRI",
+  "asing jual BBRI",
+  "foreign net buy BBCA",
+  "foreign net sell BBRI",
+  "net foreign IHSG"
 ];
 
 async function getPrice(symbol) {
@@ -119,6 +126,44 @@ function cleanTitle(title = "") {
   return title.replace(/\s-\sGoogle News$/i, "").trim();
 }
 
+function analyzeSentiment(title = "") {
+  const text = title.toLowerCase();
+
+  const positiveWords = [
+    "naik", "menguat", "cuan", "laba naik", "profit naik", "positif",
+    "rebound", "bullish", "akumulasi", "beli", "net buy", "asing beli",
+    "dividen", "rekor", "tumbuh", "menghijau"
+  ];
+
+  const negativeWords = [
+    "turun", "melemah", "anjlok", "rugi", "negatif", "bearish",
+    "jual", "net sell", "asing jual", "koreksi", "tekanan",
+    "panic", "krisis", "merosot", "memerah"
+  ];
+
+  const positive = positiveWords.some((word) => text.includes(word));
+  const negative = negativeWords.some((word) => text.includes(word));
+
+  if (positive && !negative) {
+    return {
+      label: "🟢 Positif",
+      impact: "Potensi mendukung sentimen market."
+    };
+  }
+
+  if (negative && !positive) {
+    return {
+      label: "🔴 Negatif",
+      impact: "Waspada tekanan jual / koreksi harga."
+    };
+  }
+
+  return {
+    label: "🟡 Netral",
+    impact: "Belum ada arah sentimen kuat."
+  };
+}
+
 async function checkNews() {
   console.log(`[${nowText()}] Cek berita baru...`);
 
@@ -138,11 +183,16 @@ console.log(`Keyword ${keyword} -> ${items.length} berita`);
 
         sentLinks.add(link);
 
-        const message = `📰 BERITA MARKET BARU
+const sentiment = analyzeSentiment(title);
+
+const message = `📰 BERITA MARKET BARU
 
 Topik: ${keyword}
 
 ${title}
+
+Sentiment: ${sentiment.label}
+Impact: ${sentiment.impact}
 
 ${link}
 
