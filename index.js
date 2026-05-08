@@ -27,11 +27,12 @@ const KEYWORDS = [
 
 async function getPrice(symbol) {
   try {
-    if (symbol === "BTC-USD") {
-      const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd");
-      const data = await res.json();
-      return data?.bitcoin?.usd || "N/A";
-    }
+if (symbol === "BTC-USD") {
+  const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
+  const data = await res.json();
+
+  return Number(data?.price).toFixed(0) || "N/A";
+}
 
     if (symbol === "IDR=X") {
       const res = await fetch("https://open.er-api.com/v6/latest/USD");
