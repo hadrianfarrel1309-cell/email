@@ -95,7 +95,7 @@ function nowText() {
 function newsSources() {
   return [
     "https://www.cnbcindonesia.com/market/rss",
-    "https://www.cnbcindonesia.com/investment/rss"
+    "https://rss.detik.com/index.php/finance"
   ];
 }
 
