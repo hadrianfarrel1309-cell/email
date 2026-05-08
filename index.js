@@ -26,7 +26,6 @@ const KEYWORDS = [
 ];
 
 async function getPrice(symbol) {
-async function getPrice(symbol) {
   try {
     const map = {
       "BBCA.JK": "BBCA",
