@@ -1,0 +1,22 @@
+{
+  "name": "market-email-bot",
+  "version": "1.0.0",
+  "description": "Bot email otomatis untuk update BBCA, BBRI, Bitcoin, dan USD/IDR.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
+    "test-email": "node index.js --test-email"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.4.7",
+    "nodemailer": "^6.9.16",
+    "technicalindicators": "^3.1.0",
+    "yahoo-finance2": "^2.13.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
