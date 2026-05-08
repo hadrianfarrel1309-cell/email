@@ -25,6 +25,33 @@ const KEYWORDS = [
   "bank BRI"
 ];
 
+async function getPrice(symbol) {
+  try {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1m`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const result = data?.chart?.result?.[0];
+    const meta = result?.meta;
+
+    if (!meta?.regularMarketPrice) {
+      return "N/A";
+    }
+
+    return meta.regularMarketPrice;
+  } catch (err) {
+    console.log(`Gagal ambil harga ${symbol}: ${err.message}`);
+    return "N/A";
+  }
+}
+
+function formatNumber(num) {
+  if (typeof num !== "number") return num;
+
+  return new Intl.NumberFormat("id-ID").format(num);
+}
+
 function nowText() {
   return new Intl.DateTimeFormat("id-ID", {
     timeZone: TIMEZONE,
@@ -111,14 +138,20 @@ ${link}
 }
 
 async function sendStartupMessage() {
+  const bbca = await getPrice("BBCA.JK");
+  const bbri = await getPrice("BBRI.JK");
+  const ihsg = await getPrice("^JKSE");
+  const btc = await getPrice("BTC-USD");
+  const usdidr = await getPrice("IDR=X");
+
   await sendTelegram(`✅ Market Bot aktif
 
 Pantauan:
-- BBCA
-- BBRI
-- IHSG
-- Bitcoin
-- USD/IDR
+- BBCA: ${formatNumber(bbca)} IDR
+- BBRI: ${formatNumber(bbri)} IDR
+- IHSG: ${formatNumber(ihsg)}
+- Bitcoin: $${formatNumber(btc)}
+- USD/IDR: ${formatNumber(usdidr)} IDR
 
 Cek berita tiap ${NEWS_POLL_MINUTES} menit.
 
