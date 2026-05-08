@@ -1,21 +1,13 @@
 {
   "name": "market-telegram-bot",
-  "version": "1.0.7",
-  "description": "Bot Telegram otomatis untuk update BBCA, BBRI, Bitcoin, dan USD/IDR.",
+  "version": "8.0.0",
   "type": "module",
-  "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js",
-    "test-telegram": "node index.js --test-telegram"
+    "test:telegram": "node index.js test"
   },
   "dependencies": {
-    "dayjs": "^1.11.13",
-    "dotenv": "^16.4.7",
-    "technicalindicators": "^3.1.0",
+    "express": "^4.21.2",
     "rss-parser": "^3.13.0"
-  },
-  "engines": {
-    "node": ">=20.0.0"
   }
 }
