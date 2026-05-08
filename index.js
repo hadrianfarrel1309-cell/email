@@ -15,14 +15,14 @@ const TIMEZONE = process.env.TIMEZONE || "Asia/Jakarta";
 const sentLinks = new Set();
 
 const KEYWORDS = [
-  "BBCA saham",
-  "BBRI saham",
-  "Bank BCA saham",
-  "Bank BRI saham",
-  "IHSG hari ini",
-  "Bitcoin hari ini",
-  "BTC USD",
-  "USD IDR Rupiah"
+  "BBCA",
+  "BBRI",
+  "IHSG",
+  "Bitcoin",
+  "USD IDR",
+  "saham Indonesia",
+  "bank BCA",
+  "bank BRI"
 ];
 
 function nowText() {
@@ -78,6 +78,8 @@ async function checkNews() {
       const feed = await parser.parseURL(googleNewsRssUrl(keyword));
       const items = feed.items || [];
 
+console.log(`Keyword ${keyword} -> ${items.length} berita`);
+      
       for (const item of items.slice(0, 3)) {
         const link = item.link;
         const title = cleanTitle(item.title);
