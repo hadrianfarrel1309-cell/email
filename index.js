@@ -401,6 +401,15 @@ app.get("/test", async (req, res) => {
   }
 });
 
+app.get("/keepalive", (req, res) => {
+  console.log(`[${nowText()}] Keep alive ping`);
+  res.send("OK");
+});
+
+function keepAliveLog() {
+  console.log(`[${nowText()}] Bot market masih hidup`);
+}
+
 app.listen(PORT, async () => {
   console.log(`Server jalan di port ${PORT}`);
 
@@ -444,5 +453,12 @@ setInterval(async () => {
     await sendClosingRecap();
   }
 }, 60 * 1000);
+
+  // log tiap 3 jam
+keepAliveLog();
+
+setInterval(() => {
+  keepAliveLog();
+}, 3 * 60 * 60 * 1000);
   
 });
