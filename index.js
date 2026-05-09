@@ -95,7 +95,9 @@ function nowText() {
 function newsSources() {
   return [
     "https://www.cnbcindonesia.com/market/rss",
-    "https://rss.detik.com/index.php/finance"
+    "https://rss.detik.com/index.php/finance",
+    "https://www.coindesk.com/arc/outboundfeeds/rss/",
+    "https://cointelegraph.com/rss"
   ];
 }
 
