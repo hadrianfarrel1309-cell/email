@@ -97,7 +97,11 @@ function newsSources() {
     "https://www.cnbcindonesia.com/market/rss",
     "https://rss.detik.com/index.php/finance",
     "https://www.coindesk.com/arc/outboundfeeds/rss/",
-    "https://cointelegraph.com/rss"
+    "https://cointelegraph.com/rss",
+    "https://rss.kontan.co.id/news/investasi",
+    "https://market.bisnis.com/rss",
+    "https://investor.id/rss",
+    "https://www.bloombergtechnoz.com/feed"
   ];
 }
 
@@ -184,6 +188,15 @@ async function checkNews() {
     "BCA",
     "BRI",
     "asing"
+    "BI Rate",
+"suku bunga",
+"The Fed",
+"foreign flow",
+"net foreign buy",
+"net foreign sell",
+"yield obligasi",
+"rupiah melemah",
+"rupiah menguat"
   ];
 
   for (const source of newsSources()) {
