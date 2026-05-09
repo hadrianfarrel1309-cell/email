@@ -187,7 +187,7 @@ async function checkNews() {
     "Rupiah",
     "BCA",
     "BRI",
-    "asing"
+    "asing",
     "BI Rate",
 "suku bunga",
 "The Fed",
