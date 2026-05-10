@@ -37,21 +37,34 @@ const KEYWORDS = [
 
 async function getPrice(symbol) {
   try {
-if (symbol === "BTC-USD") {
-  const res = await fetch("https://api.coinbase.com/v2/prices/BTC-USD/spot");
-  const data = await res.json();
 
-  return data?.data?.amount
-    ? Number(data.data.amount).toFixed(0)
-    : "N/A";
-}
+    // BITCOIN
+    if (symbol === "BTC-USD") {
+      const res = await fetch("https://api.coinbase.com/v2/prices/BTC-USD/spot");
+      const data = await res.json();
 
+      const price = Number(data?.data?.amount || 0);
+
+      return {
+        current: price,
+        open: price
+      };
+    }
+
+    // USD IDR
     if (symbol === "IDR=X") {
       const res = await fetch("https://open.er-api.com/v6/latest/USD");
       const data = await res.json();
-      return data?.rates?.IDR || "N/A";
+
+      const price = Number(data?.rates?.IDR || 0);
+
+      return {
+        current: price,
+        open: price
+      };
     }
 
+    // SAHAM / IHSG
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1m`;
 
     const res = await fetch(url, {
@@ -61,24 +74,51 @@ if (symbol === "BTC-USD") {
     });
 
     const data = await res.json();
+
     const result = data?.chart?.result?.[0];
 
-    const metaPrice =
+    const current =
       result?.meta?.regularMarketPrice ||
       result?.meta?.previousClose;
 
-    const closes = result?.indicators?.quote?.[0]?.close || [];
-    const lastClose = closes.filter((x) => typeof x === "number").pop();
+    const open =
+      result?.meta?.regularMarketOpen ||
+      result?.meta?.chartPreviousClose ||
+      current;
 
-    return metaPrice || lastClose || "N/A";
+    return {
+      current: Number(current),
+      open: Number(open)
+    };
+
   } catch (err) {
     console.log(`Gagal ambil harga ${symbol}: ${err.message}`);
-    return "N/A";
+
+    return {
+      current: 0,
+      open: 0
+    };
   }
 }
 
 
 function formatNumber(num) {
+
+  function getChange(current, open) {
+  if (!open || !current) {
+    return {
+      arrow: "",
+      pct: "0.00"
+    };
+  }
+
+  const pct = ((current - open) / open) * 100;
+
+  return {
+    arrow: pct >= 0 ? "▲" : "▼",
+    pct: Math.abs(pct).toFixed(2)
+  };
+}
   if (typeof num !== "number") return num;
 
   return new Intl.NumberFormat("id-ID").format(num);
@@ -337,20 +377,27 @@ Pantau volume dan jangan FOMO entry terlalu atas.
 }
 
 async function sendStartupMessage() {
+
   const bbca = await getPrice("BBCA.JK");
   const bbri = await getPrice("BBRI.JK");
   const ihsg = await getPrice("^JKSE");
   const btc = await getPrice("BTC-USD");
   const usdidr = await getPrice("IDR=X");
 
+  const bbcaChange = getChange(bbca.current, bbca.open);
+  const bbriChange = getChange(bbri.current, bbri.open);
+  const ihsgChange = getChange(ihsg.current, ihsg.open);
+  const btcChange = getChange(btc.current, btc.open);
+  const usdChange = getChange(usdidr.current, usdidr.open);
+
   await sendTelegram(`✅ Market Bot aktif
 
 Pantauan:
-- BBCA: ${formatNumber(bbca)} IDR
-- BBRI: ${formatNumber(bbri)} IDR
-- IHSG: ${formatNumber(ihsg)}
-- Bitcoin: $${formatNumber(btc)}
-- USD/IDR: ${formatNumber(usdidr)} IDR
+- BBCA: ${formatNumber(bbca.current)} IDR ${bbcaChange.arrow}(${bbcaChange.pct}%)
+- BBRI: ${formatNumber(bbri.current)} IDR ${bbriChange.arrow}(${bbriChange.pct}%)
+- IHSG: ${formatNumber(ihsg.current)} ${ihsgChange.arrow}(${ihsgChange.pct}%)
+- Bitcoin: $${formatNumber(btc.current)} ${btcChange.arrow}(${btcChange.pct}%)
+- USD/IDR: ${formatNumber(usdidr.current)} IDR ${usdChange.arrow}(${usdChange.pct}%)
 
 Cek berita tiap ${NEWS_POLL_MINUTES} menit.
 
