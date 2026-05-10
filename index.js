@@ -38,18 +38,51 @@ const KEYWORDS = [
 async function getPrice(symbol) {
   try {
 
-    // BITCOIN
-    if (symbol === "BTC-USD") {
-      const res = await fetch("https://api.coinbase.com/v2/prices/BTC-USD/spot");
-      const data = await res.json();
+// BITCOIN
+if (symbol === "BTC-USD") {
 
-      const price = Number(data?.data?.amount || 0);
+  // harga sekarang
+  const nowRes = await fetch("https://api.coinbase.com/v2/prices/BTC-USD/spot");
+  const nowData = await nowRes.json();
 
-      return {
-        current: price,
-        open: price
-      };
+  const current = Number(nowData?.data?.amount || 0);
+
+  // tanggal WIB
+  const now = new Date();
+
+  const jakartaDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(now);
+
+  // jam 00:00 WIB
+  const start = new Date(`${jakartaDate}T00:00:00+07:00`);
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+
+  // ambil candle awal hari
+  const candleUrl =
+    `https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=3600&start=${start.toISOString()}&end=${end.toISOString()}`;
+
+  const candleRes = await fetch(candleUrl, {
+    headers: {
+      "User-Agent": "Mozilla/5.0"
     }
+  });
+
+  const candles = await candleRes.json();
+
+  // format: [time, low, high, open, close, volume]
+  const open = Array.isArray(candles) && candles.length
+    ? Number(candles[0][3])
+    : current;
+
+  return {
+    current,
+    open
+  };
+}
 
     // USD IDR
     if (symbol === "IDR=X") {
@@ -101,10 +134,13 @@ async function getPrice(symbol) {
   }
 }
 
-
 function formatNumber(num) {
+  if (typeof num !== "number") return num;
 
-  function getChange(current, open) {
+  return new Intl.NumberFormat("id-ID").format(num);
+}
+
+function getChange(current, open) {
   if (!open || !current) {
     return {
       arrow: "",
@@ -119,10 +155,7 @@ function formatNumber(num) {
     pct: Math.abs(pct).toFixed(2)
   };
 }
-  if (typeof num !== "number") return num;
 
-  return new Intl.NumberFormat("id-ID").format(num);
-}
 
 function nowText() {
   return new Intl.DateTimeFormat("id-ID", {
@@ -295,8 +328,8 @@ async function checkPanicSell() {
   ];
 
   for (const asset of assets) {
-    const current = await getPrice(asset.symbol);
-    const currentNum = Number(String(current).replace(/[^\d.-]/g, ""));
+const data = await getPrice(asset.symbol);
+const currentNum = data.current;
 
     if (!currentNum || Number.isNaN(currentNum)) continue;
 
@@ -340,8 +373,8 @@ async function checkBreakout() {
   ];
 
   for (const asset of assets) {
-    const current = await getPrice(asset.symbol);
-    const currentNum = Number(String(current).replace(/[^\d.-]/g, ""));
+const data = await getPrice(asset.symbol);
+const currentNum = data.current;
 
     if (!currentNum || Number.isNaN(currentNum)) continue;
 
@@ -413,11 +446,11 @@ async function sendMorningBriefing() {
 
   await sendTelegram(`📊 MORNING BRIEFING
 
-IHSG: ${formatNumber(ihsg)}
-BBCA: ${formatNumber(bbca)} IDR
-BBRI: ${formatNumber(bbri)} IDR
-Bitcoin: $${formatNumber(btc)}
-USD/IDR: ${formatNumber(usdidr)} IDR
+IHSG: ${formatNumber(ihsg.current)}
+BBCA: ${formatNumber(bbca.current)} IDR
+BBRI: ${formatNumber(bbri.current)} IDR
+Bitcoin: $${formatNumber(btc.current)}
+USD/IDR: ${formatNumber(usdidr.current)} IDR
 
 Sentimen market:
 🟢 Pantau saham perbankan
@@ -436,11 +469,11 @@ async function sendClosingRecap() {
 
   await sendTelegram(`📉 MARKET CLOSE
 
-IHSG: ${formatNumber(ihsg)}
-BBCA: ${formatNumber(bbca)} IDR
-BBRI: ${formatNumber(bbri)} IDR
-Bitcoin: $${formatNumber(btc)}
-USD/IDR: ${formatNumber(usdidr)} IDR
+IHSG: ${formatNumber(ihsg.current)}
+BBCA: ${formatNumber(bbca.current)} IDR
+BBRI: ${formatNumber(bbri.current)} IDR
+Bitcoin: $${formatNumber(btc.current)}
+USD/IDR: ${formatNumber(usdidr.current)} IDR
 
 Summary:
 🟢 Pantau saham big bank
