@@ -90,12 +90,29 @@ if (symbol === "BTC-USD") {
   };
 }
 
-// USD IDR
+// USD IDR dari BCA
 if (symbol === "IDR=X") {
-  const res = await fetch("https://api.frankfurter.app/latest?from=USD&to=IDR");
-  const data = await res.json();
 
-  const current = Number(data?.rates?.IDR || 0);
+  const res = await fetch("https://www.klikbca.com/", {
+    headers: {
+      "User-Agent": "Mozilla/5.0"
+    }
+  });
+
+  const html = await res.text();
+
+  const match = html.match(/USD\s([\d.,]+)\s([\d.,]+)/);
+
+  if (!match) {
+    throw new Error("Kurs USD BCA tidak ditemukan");
+  }
+
+  // ambil kurs jual
+  const current = Number(
+    match[2]
+      .replace(/\./g, "")
+      .replace(",", ".")
+  );
 
   const jakartaDate = new Intl.DateTimeFormat("en-CA", {
     timeZone: TIMEZONE,
