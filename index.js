@@ -92,14 +92,10 @@ if (symbol === "BTC-USD") {
 
 // USD IDR
 if (symbol === "IDR=X") {
-
-  const res = await fetch("https://open.er-api.com/v6/latest/USD");
-
+  const res = await fetch("https://api.frankfurter.app/latest?from=USD&to=IDR");
   const data = await res.json();
-  console.log("USDIDR DATA:", data);
 
   const current = Number(data?.rates?.IDR || 0);
-  console.log("USDIDR CURRENT:", current);
 
   const jakartaDate = new Intl.DateTimeFormat("en-CA", {
     timeZone: TIMEZONE,
@@ -119,7 +115,6 @@ if (symbol === "IDR=X") {
     open: lastPrices[key]
   };
 }
-
     // SAHAM / IHSG
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1m`;
 
