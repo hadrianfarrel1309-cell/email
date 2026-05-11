@@ -90,18 +90,24 @@ if (symbol === "BTC-USD") {
   };
 }
 
-    // USD IDR
-    if (symbol === "IDR=X") {
-      const res = await fetch("https://open.er-api.com/v6/latest/USD");
-      const data = await res.json();
+  if (symbol === "IDR=X") {
 
-      const price = Number(data?.rates?.IDR || 0);
+  const res = await fetch(
+    "https://api.exchangerate.host/live?source=USD&currencies=IDR"
+  );
 
-      return {
-        current: price,
-        open: price
-      };
-    }
+  const data = await res.json();
+
+  const current = Number(data?.quotes?.USDIDR || 0);
+
+  // contoh open sementara
+  const open = current - 50;
+
+  return {
+    current,
+    open
+  };
+}
 
     // SAHAM / IHSG
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1d&interval=1m`;
