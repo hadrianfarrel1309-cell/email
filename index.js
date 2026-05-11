@@ -518,7 +518,8 @@ app.listen(PORT, async () => {
   } catch (err) {
     console.log(`Gagal kirim startup message: ${err.message}`);
   }
-
+setInterval(sendStartupMessage, NEWS_POLL_MINUTES * 60 * 1000);
+  
 await checkNews();
 
 setInterval(checkNews, NEWS_POLL_MINUTES * 60 * 1000);
