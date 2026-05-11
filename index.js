@@ -20,12 +20,18 @@ const lastBreakoutAlerts = {};
 const KEYWORDS = [
   "BBCA",
   "BBRI",
+  "BMRI",
   "IHSG",
   "Bitcoin",
   "USD IDR",
   "saham Indonesia",
   "bank BCA",
   "bank BRI",
+  "bank Mandiri",
+  "asing beli BMRI",
+  "asing jual BMRI",
+  "foreign net buy BMRI",
+  "foreign net sell BMRI",
   "asing beli BBCA",
   "asing jual BBCA",
   "asing beli BBRI",
@@ -174,7 +180,13 @@ function newsSources() {
     "https://rss.kontan.co.id/news/investasi",
     "https://market.bisnis.com/rss",
     "https://investor.id/rss",
-    "https://www.bloombergtechnoz.com/feed"
+    "https://www.bloombergtechnoz.com/feed",
+     "https://emitennews.com/feed/",
+    "https://www.idxchannel.com/rss",
+    "https://stockwatch.id/feed/",
+    "https://www.kabarbursa.com/feed/",
+    "https://katadata.co.id/rss",
+    "https://www.emitentrust.com/feed/"
   ];
 }
 
@@ -255,11 +267,16 @@ async function checkNews() {
     "BBRI",
     "IHSG",
     "Bitcoin",
+    "BMRI",
     "BTC",
     "USD",
     "Rupiah",
     "BCA",
+    "Bank Central Asia",
     "BRI",
+    "Bank Rakyat Indonesia",
+    "Mandiri",
+    "Bank Mandiri",
     "asing",
     "BI Rate",
 "suku bunga",
@@ -322,6 +339,7 @@ ${link}
 async function checkPanicSell() {
   const assets = [
     { name: "BBCA", symbol: "BBCA.JK", limit: -2, unit: "IDR" },
+    { name: "BMRI", symbol: "BMRI.JK", limit: -2, unit: "IDR" },
     { name: "BBRI", symbol: "BBRI.JK", limit: -2, unit: "IDR" },
     { name: "IHSG", symbol: "^JKSE", limit: -1.5, unit: "" },
     { name: "Bitcoin", symbol: "BTC-USD", limit: -3, unit: "USD" }
@@ -367,6 +385,7 @@ Jangan FOMO sell, cek support dan volume dulu.
 async function checkBreakout() {
   const assets = [
     { name: "BBCA", symbol: "BBCA.JK", limit: 2, unit: "IDR" },
+    { name: "BMRI", symbol: "BMRI.JK", limit: 2, unit: "IDR" },
     { name: "BBRI", symbol: "BBRI.JK", limit: 2, unit: "IDR" },
     { name: "IHSG", symbol: "^JKSE", limit: 1.2, unit: "" },
     { name: "Bitcoin", symbol: "BTC-USD", limit: 3, unit: "USD" }
@@ -412,12 +431,14 @@ Pantau volume dan jangan FOMO entry terlalu atas.
 async function sendStartupMessage() {
 
   const bbca = await getPrice("BBCA.JK");
+  const bmri = await getPrice("BMRI.JK");
   const bbri = await getPrice("BBRI.JK");
   const ihsg = await getPrice("^JKSE");
   const btc = await getPrice("BTC-USD");
   const usdidr = await getPrice("IDR=X");
 
   const bbcaChange = getChange(bbca.current, bbca.open);
+  const bmriChange = getChange(bmri.current, bmri.open);
   const bbriChange = getChange(bbri.current, bbri.open);
   const ihsgChange = getChange(ihsg.current, ihsg.open);
   const btcChange = getChange(btc.current, btc.open);
@@ -427,6 +448,7 @@ async function sendStartupMessage() {
 
 Pantauan:
 - BBCA: ${formatNumber(bbca.current)} IDR ${bbcaChange.arrow}(${bbcaChange.pct}%)
+- BMRI: ${formatNumber(bmri.current)} IDR ${bmriChange.arrow}(${bmriChange.pct}%)
 - BBRI: ${formatNumber(bbri.current)} IDR ${bbriChange.arrow}(${bbriChange.pct}%)
 - IHSG: ${formatNumber(ihsg.current)} ${ihsgChange.arrow}(${ihsgChange.pct}%)
 - Bitcoin: $${formatNumber(btc.current)} ${btcChange.arrow}(${btcChange.pct}%)
@@ -439,6 +461,7 @@ Cek berita tiap ${NEWS_POLL_MINUTES} menit.
 
 async function sendMorningBriefing() {
   const bbca = await getPrice("BBCA.JK");
+  const bmri = await getPrice("BMRI.JK");
   const bbri = await getPrice("BBRI.JK");
   const ihsg = await getPrice("^JKSE");
   const btc = await getPrice("BTC-USD");
@@ -448,6 +471,7 @@ async function sendMorningBriefing() {
 
 IHSG: ${formatNumber(ihsg.current)}
 BBCA: ${formatNumber(bbca.current)} IDR
+BMRI: ${formatNumber(bmri.current)} IDR
 BBRI: ${formatNumber(bbri.current)} IDR
 Bitcoin: $${formatNumber(btc.current)}
 USD/IDR: ${formatNumber(usdidr.current)} IDR
@@ -462,6 +486,7 @@ Sentimen market:
 
 async function sendClosingRecap() {
   const bbca = await getPrice("BBCA.JK");
+  const bmri = await getPrice("BMRI.JK");
   const bbri = await getPrice("BBRI.JK");
   const ihsg = await getPrice("^JKSE");
   const btc = await getPrice("BTC-USD");
@@ -471,6 +496,7 @@ async function sendClosingRecap() {
 
 IHSG: ${formatNumber(ihsg.current)}
 BBCA: ${formatNumber(bbca.current)} IDR
+BMRI: ${formatNumber(bmri.current)} IDR
 BBRI: ${formatNumber(bbri.current)} IDR
 Bitcoin: $${formatNumber(btc.current)}
 USD/IDR: ${formatNumber(usdidr.current)} IDR
