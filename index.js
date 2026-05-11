@@ -90,22 +90,33 @@ if (symbol === "BTC-USD") {
   };
 }
 
-  if (symbol === "IDR=X") {
+// USD IDR
+if (symbol === "IDR=X") {
 
-  const res = await fetch(
-    "https://api.exchangerate.host/live?source=USD&currencies=IDR"
-  );
+  const res = await fetch("https://open.er-api.com/v6/latest/USD");
 
   const data = await res.json();
+  console.log("USDIDR DATA:", data);
 
-  const current = Number(data?.quotes?.USDIDR || 0);
+  const current = Number(data?.rates?.IDR || 0);
+  console.log("USDIDR CURRENT:", current);
 
-  // contoh open sementara
-  const open = current - 50;
+  const jakartaDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date());
+
+  const key = `USDIDR_OPEN_${jakartaDate}`;
+
+  if (!lastPrices[key]) {
+    lastPrices[key] = current;
+  }
 
   return {
     current,
-    open
+    open: lastPrices[key]
   };
 }
 
