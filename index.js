@@ -106,7 +106,7 @@ if (symbol === "IDR=X") {
 
   // ambil row USD
   const usdMatch = html.match(
-    /USD[\s\S]*?([\d.]+,\d+)[\s\S]*?([\d.]+,\d+)/
+  /USD[\s\S]*?Beli[\s\S]*?Jual[\s\S]*?([\d.]+,\d+)[\s\S]*?([\d.]+,\d+)/
   );
 
   if (!usdMatch) {
