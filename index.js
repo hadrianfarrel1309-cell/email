@@ -90,26 +90,32 @@ if (symbol === "BTC-USD") {
   };
 }
 
-// USD IDR dari BCA
+// USD IDR dari BCA e-Rate
 if (symbol === "IDR=X") {
 
-  const res = await fetch("https://www.klikbca.com/", {
-    headers: {
-      "User-Agent": "Mozilla/5.0"
+  const res = await fetch(
+    "https://www.bca.co.id/id/informasi/kurs",
+    {
+      headers: {
+        "User-Agent": "Mozilla/5.0"
+      }
     }
-  });
+  );
 
   const html = await res.text();
 
-  const match = html.match(/USD\s([\d.,]+)\s([\d.,]+)/);
+  // ambil row USD
+  const usdMatch = html.match(
+    /USD[\s\S]*?([\d.]+,\d+)[\s\S]*?([\d.]+,\d+)/
+  );
 
-  if (!match) {
+  if (!usdMatch) {
     throw new Error("Kurs USD BCA tidak ditemukan");
   }
 
-  // ambil kurs jual
+  // ambil harga JUAL (kotak merah)
   const current = Number(
-    match[2]
+    usdMatch[2]
       .replace(/\./g, "")
       .replace(",", ".")
   );
