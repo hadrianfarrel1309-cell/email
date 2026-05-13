@@ -2,7 +2,13 @@ import express from "express";
 import Parser from "rss-parser";
 
 const app = express();
-const parser = new Parser();
+
+const parser = new Parser({
+  timeout: 15000,
+  headers: {
+    "User-Agent": "Mozilla/5.0"
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 
@@ -212,14 +218,8 @@ function newsSources() {
     "https://rss.detik.com/index.php/finance",
     "https://www.coindesk.com/arc/outboundfeeds/rss/",
     "https://cointelegraph.com/rss",
-    "https://rss.kontan.co.id/news/investasi",
-    "https://market.bisnis.com/rss",
-    "https://investor.id/rss",
-    "https://www.bloombergtechnoz.com/feed",
-     "https://emitennews.com/feed/",
     "https://www.idxchannel.com/rss",
     "https://stockwatch.id/feed/",
-    "https://www.kabarbursa.com/feed/",
     "https://katadata.co.id/rss",
     "https://www.emitentrust.com/feed/"
   ];
@@ -463,8 +463,7 @@ Pantau volume dan jangan FOMO entry terlalu atas.
   }
 }
 
-async function sendStartupMessage() {
-
+async function sendMarketUpdate() {
   const bbca = await getPrice("BBCA.JK");
   const bmri = await getPrice("BMRI.JK");
   const bbri = await getPrice("BBRI.JK");
@@ -479,17 +478,14 @@ async function sendStartupMessage() {
   const btcChange = getChange(btc.current, btc.open);
   const usdChange = getChange(usdidr.current, usdidr.open);
 
-  await sendTelegram(`✅ Market Bot aktif
+  await sendTelegram(`📊 UPDATE MARKET
 
-Pantauan:
 - BBCA: ${formatNumber(bbca.current)} IDR ${bbcaChange.arrow}(${bbcaChange.pct}%)
 - BMRI: ${formatNumber(bmri.current)} IDR ${bmriChange.arrow}(${bmriChange.pct}%)
 - BBRI: ${formatNumber(bbri.current)} IDR ${bbriChange.arrow}(${bbriChange.pct}%)
 - IHSG: ${formatNumber(ihsg.current)} ${ihsgChange.arrow}(${ihsgChange.pct}%)
 - Bitcoin: $${formatNumber(btc.current)} ${btcChange.arrow}(${btcChange.pct}%)
 - USD/IDR: ${formatNumber(usdidr.current)} IDR ${usdChange.arrow}(${usdChange.pct}%)
-
-Cek berita tiap ${NEWS_POLL_MINUTES} menit.
 
 ⏰ ${nowText()}`);
 }
@@ -575,11 +571,11 @@ app.listen(PORT, async () => {
   }
 
   try {
-    await sendStartupMessage();
+    await sendMarketUpdate();
   } catch (err) {
     console.log(`Gagal kirim startup message: ${err.message}`);
   }
-setInterval(sendStartupMessage, NEWS_POLL_MINUTES * 60 * 1000);
+setInterval(sendMarketUpdate, NEWS_POLL_MINUTES * 60 * 1000);
   
 await checkNews();
 
